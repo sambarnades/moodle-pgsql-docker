@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: docker.io/bitnami/postgresql:latest
+    ports:
+      - '5432:5432'
+    restart: always
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=no
+      - POSTGRES_USER=bn_moodle
+      - POSTGRES_PASSWORD=bn_moodle
+      - POSTGRES_DATABASE=bitnami_moodle
+      - POSTGRES_CHARACTER_SET=utf8mb4
+    volumes:
+      - 'postgres:/bitnami/postgres'
+
+  moodle:
+    image: docker.io/bitnami/moodle:5.0
+    ports:
+      - '8080:8080'
+      - '8443:8443'
+    environment:
+      - MOODLE_DATABASE_TYPE=pgsql
+      - MOODLE_DATABASE_HOST=postgres
+      - MOODLE_DATABASE_PORT_NUMBER=5432
+      - MOODLE_DATABASE_USER=bn_moodle
+      - MOODLE_DATABASE_PASSWORD=bn_moodle
+      - MOODLE_DATABASE_NAME=bitnami_moodle
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=no
+    volumes:
+      - 'postgres_moodle_data:/bitnami/moodle'
+      - 'postgres_moodledata_data:/bitnami/moodledata'
+    depends_on:
+      - postgres
+      
+  pgadmin:
+    image: docker.io/elestio/pgadmin:latest
+    restart: always
+    ports:
+      - '15432:15432'
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@pgadmin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_LISTEN_PORT=15432
+    depends_on:
+      - postgres
+    volumes:
+      - 'pgadmin:/var/lib/pgadmin'
+volumes:
+  postgres:
+    driver: local
+  postgres_moodle_data:
+    driver: local
+  postgres_moodledata_data:
+    driver: local
+  pgadmin:
+    driver: local
+  
